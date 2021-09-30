@@ -5,6 +5,9 @@
 #include <cstring>
 #include <random>
 
+uint64_t fastrange64(uint64_t portion, uint64_t range) {
+  return static_cast<uint64_t>((static_cast<__uint128_t>(portion) * range) >> 64);
+}
 
 uint64_t MurmurHash64A ( const uint64_t * data, int len, uint64_t seed )
 {
@@ -37,6 +40,7 @@ uint64_t MurmurHash64A ( const uint64_t * data, int len, uint64_t seed )
 uint64_t random64() {
   static std::random_device r1;
   static std::mt19937_64 r2{r1()};
+  //return r2();
   std::array<uint64_t, 4> vals = {r1(), r2(), r1(), r2()};
   return MurmurHash64A(vals.data(), vals.size(), 12345);
 }
@@ -48,61 +52,89 @@ void Go(size_t count, int players, size_t iters) {
 
   enum Approach {
     kRandom,
-    kAddition,
-    kXor,
+    kBucketFixed,
+    kAdditionFixed,
+    kXorFixed,
+    kAdditionGeom,
+    kXorGeom,
     kMultiXor,
     kMultiplyAddition,
     kMultiplyXor,
   };
 
   std::vector<bool> v;
-  for (auto approach : {kRandom, kAddition, kXor, kMultiXor, kMultiplyAddition, kMultiplyXor}) {
+  for (auto approach : {kRandom, kBucketFixed, kAdditionFixed, kXorFixed, kAdditionGeom, kXorGeom, kMultiXor, /*kMultiplyAddition, kMultiplyXor*/}) {
     size_t threshold_total = 0;
     size_t collision_iters = 0;
-    for (uint64_t iter = 0; iter < iters; ++iter) {
+    for (size_t iter = 0; iter < iters; ++iter) {
       v.assign(kSize, false);
-      bool collision = false;
-      uint64_t ids = 0;
-      for (int p = 0; !collision && (players < 0 || p < players); ++p) {
-        size_t start = static_cast<size_t>(random64()) & kMask;
-        for (size_t i = 0; i < count && !collision; ++i) {
-          size_t pos;
-          size_t mult_offset = static_cast<size_t>(
-              (i * uint64_t{0xf01f39c13d6a7d81}) >> (64 - kBits));
-          switch (approach) {
-          case kRandom:
-            pos = static_cast<size_t>(random64()) & kMask;
-            break;
-          case kAddition:
-            pos = (start + i) & kMask;
-            break;
-          case kXor:
-            pos = start ^ i;
-            break;
-          case kMultiXor:
-            pos = start ^ (i % 20) ^ ((i / 20) << 8);
-            break;
-          case kMultiplyAddition:
-            pos = (start + mult_offset) & kMask;
-            break;
-          case kMultiplyXor:
-            pos = start ^ mult_offset;
-            break;
+      size_t i = 0;
+      size_t start = 0;
+      const size_t max_ids = players < 0 ? SIZE_MAX : players * count;
+      for (size_t ids = 0; ids < max_ids; ++ids) {
+        if (i == 0) {
+          start = static_cast<size_t>(random64()) & kMask;
+          if (approach == kBucketFixed) {
+            start = start / count * count;
           }
-          if (v[pos]) {
-            collision = true;
-            ++collision_iters;
-            threshold_total += ids;
-          } else {
-            v[pos] = true;
-            ++ids;
+        }
+        size_t pos;
+        size_t mult_offset = static_cast<size_t>(
+            (i * uint64_t{0xf01f39c13d6a7d81}) >> (64 - kBits));
+        switch (approach) {
+        case kBucketFixed:
+        case kAdditionFixed:
+        case kAdditionGeom:
+          pos = (start + i) & kMask;
+          break;
+        case kRandom:
+        case kXorFixed:
+        case kXorGeom:
+          pos = start ^ i;
+          break;
+        case kMultiXor:
+          pos = start ^ (i % 20) ^ ((i / 20) << 8);
+          break;
+        case kMultiplyAddition:
+          pos = (start + mult_offset) & kMask;
+          break;
+        case kMultiplyXor:
+          pos = start ^ mult_offset;
+          break;
+        }
+        if (v[pos]) {
+          ++collision_iters;
+          threshold_total += ids;
+          break;
+        }
+        v[pos] = true;
+        ++i;
+        switch (approach) {
+        case kRandom:
+          i = 0;
+          break;
+        case kAdditionFixed:
+        case kBucketFixed:
+        case kXorFixed:
+          if (i == count) {
+            i = 0;
           }
+          break;
+        default:
+          // geometric distribution with mean `count`
+          if (fastrange64(random64(), count) == 0) {
+            i = 0;
+          }
+          break;
         }
       }
     }
-    const char *name = approach == kAddition       ? "addition"
-                       : approach == kXor          ? "xor"
-                       : approach == kMultiXor      ? "multixor"
+    const char *name = approach == kAdditionFixed      ? "addition_fixed"
+                       : approach == kAdditionGeom     ? "addition_geom"
+                       : approach == kXorFixed         ? "xor_fixed"
+                       : approach == kXorGeom          ? "xor_geom"
+                       : approach == kBucketFixed      ? "bucket_fixed"
+                       : approach == kMultiXor         ? "multixor"
                        : approach == kMultiplyAddition ? "multiply-addition"
                        : approach == kMultiplyXor      ? "multiply-xor"
                                                    : "random";
