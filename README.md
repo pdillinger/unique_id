@@ -25,7 +25,8 @@ general library used on various hardware configurations and
 distributed environments, we cannot necessarily rely on **structured**
 identifiers for RocksDB instances, via prior coordination such as MAC
 address + process ID + wall clock time. (See also [Eric Lippert's GUID
-Guide](https://ericlippert.com/2012/04/24/guid-guide-part-one/).)
+Guide](https://ericlippert.com/2012/04/24/guid-guide-part-one/) and
+[MongoDB ObjectID format](https://github.com/mongodb/specifications/blob/master/source/objectid.rst).
 
 Although SST unique IDs are unlikely to all go into a global pool for
 look-up, it is common for a machine to host a subset of RocksDB
