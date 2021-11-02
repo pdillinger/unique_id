@@ -17,6 +17,41 @@ Found for 20 bits + 1 reserve: 0x4827fb4ef68a8ddd
 Found for 20 bits + 1 reserve: 0xb940080880108f5f
 Found for 21 bits + 1 reserve: 0x7040e6b29b5c190f
 Found for 21 bits + 1 reserve: 0xa1007dddd1928feb
+Found for 22 bits + 1 reserve: 0xd34952e2a348682f
+
+Found for 23 bits + 1 reserve: 0xd8100e5ccfc93193
+Found for 23 bits + 1 reserve: 0xe5ac3a34bf829d3d
+Found for 23 bits + 1 reserve: 0x648040da4b5bd305
+Found for 23 bits + 1 reserve: 0xd34007ded4c7fd6f
+Found for 23 bits + 1 reserve: 0xb940102223616d05
+
+Found for 26 bits + 1 reserve: 0x648040da4b5ca69b
+Found for 26 bits + 1 reserve: 0x648040da4b5ca6de
+Found for 26 bits + 1 reserve: 0xe5ac3a34bf82fb64
+
+Found for 27 bits + 1 reserve: 0x648040da4b5ca438
+Found for 27 bits + 1 reserve: 0x648040da4b5caa1b
+Found for 28 bits + 1 reserve: 0xd34007ded4c945c9
+Found for 29 bits + 1 reserve: 0xd34007ded4c945ef
+
+Found for 29 bits + 1 reserve: 0xd34007ded4c94592
+Found for 29 bits + 1 reserve: 0xd34007ded4c94594
+Found for 29 bits + 1 reserve: 0xd34007ded4c94595
+Found for 29 bits + 1 reserve: 0xd34007ded4c94596
+Found for 29 bits + 1 reserve: 0xd34007ded4c94597
+Found for 29 bits + 1 reserve: 0xd34007ded4c945ef
+Found for 29 bits + 1 reserve: 0xd34007ded4c945f0
+Found for 29 bits + 1 reserve: 0xd34007ded4c945f1
+Found for 29 bits + 1 reserve: 0xd34007ded4c945f2
+Found for 29 bits + 1 reserve: 0xd34007ded4c945f3
+Found for 29 bits + 1 reserve: 0xd34007ded4c945f4
+Found for 29 bits + 1 reserve: 0xd34007ded4c945f5
+Found for 29 bits + 1 reserve: 0xd34007ded4c945f6
+
+Found for 29 bits + 1 reserve: 0xd34007ded4c945ef
+5×3044435078829274211 (2 distinct prime factors)
+Found for 29 bits + 1 reserve: 0xd34007ded4c945f3
+6547×137947×16854742451 (3 distinct prime factors)
 */
 
 int main(int argc, char *argv[]) {
@@ -33,7 +68,30 @@ int main(int argc, char *argv[]) {
   std::mt19937_64 r{r1()};
 
   for (;;) {
-    uint64_t factor = r() | 1;
+    // Seek promising
+    //uint64_t factor = r() | 1;
+
+    // Refine
+    /*
+    uint64_t bases[] = {
+      0xd8100e5ccfc93193,
+      0xe5ac3a34bf829d3d,
+      0x648040da4b5bd305,
+      0xd34007ded4c7fd6f,
+      0xb940102223616d05,
+    };
+    uint64_t factor = bases[r() % (sizeof(bases) / sizeof(*bases))];
+    uint64_t modify_mask = (uint64_t{1} << (r() & 63)) - 1;
+    factor ^= r() & modify_mask;
+    */
+
+    // Refine further
+    uint64_t bases[] = {
+      0x648040da4b5ca000,
+      0xd34007ded4c94000,
+    };
+    uint64_t factor = bases[r() % (sizeof(bases) / sizeof(*bases))];
+    factor ^= r() & 0xfff;
 
     for (int nbits = 1; nbits < max_nbits; ++nbits) {
       size_t max = size_t{1} << nbits;
@@ -56,7 +114,7 @@ int main(int argc, char *argv[]) {
         break;
       }
 
-      if (nbits >= 20) {
+      if (nbits >= 29) {
         std::cerr << "Found for " << nbits << " bits + " << reserve_bits
                   << " reserve: 0x" << std::hex << factor << std::dec
                   << std::endl;
