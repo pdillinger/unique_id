@@ -17,6 +17,30 @@ We can assume coordination and ordering within each process, but each
 process does not know how many entities it will generate until after
 the last is generated.
 
+## As a "prisoner's" problem
+You awake on an alien ship suffering complete amnesia. You are told that
+you and other abductees can return to Earth in single-occupancy escape
+pods, but only if you are smart enough for each of you to choose unique
+escape pods, which are numbered 1 to N. If any of you choose the same pod,
+you will all be killed for alien science.
+
+You are being brought in one-by-one to choose an escape pod, without
+knowing anything about which have already been chosen, EXCEPT that
+some of you will be allowed to receive a written note from the previous
+person to choose but some will not. You have not received a note from
+the previous person--if there was one. You don't know how
+many people there are trying to escape, nor how likely the next person is
+to be allowed to see your note.
+
+You have been told how many escape pods there are and you have been
+given a fair coin (reset to a pre-determined state). You don't see any
+clocks on the wall or anything like that, and because of the amnesia, you
+don't know any identifying information about yourself, such as your
+birthday or what room you were being held in.
+
+What is the best strategy to maximize chances of escape, and what then do
+you write in the note to the next person?
+
 ## Intended Application
 This is the essence of the problem of generating unique identifiers
 for SST files in
