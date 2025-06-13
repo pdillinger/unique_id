@@ -68,12 +68,12 @@ size_t compute_in_count(size_t samples, int seed) {
     // in_count += (a2 <= UINT64_MAX - b2);
     // in_count += (a2 <= -b2);
 
-    // Linear (or pseudorandom) updates to a and b
+    // Linear (or pseudorandom, or full entropy random) updates to a and b
     // (Linear converges more quickly)
     a += kPrime1;
     b += kPrime2;
 
-    // TODO: merge in source of randomness
+    // TODO: merge in source of randomness, not necessarily full entropy
     // state1 ^= ...;
     // state2 ^= ...;
 
