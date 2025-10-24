@@ -1,5 +1,12 @@
 # Semi-coordinated unique ID generation
 
+> UPDATE: This work has been formalized into [a paper](https://arxiv.org/abs/2304.07109)
+> presented at [PODS'23](https://dl.acm.org/doi/10.1145/3584372.3588674). And an
+> independent listing of the basic idea, with no analysis, is in the latest
+> [RFC for UUIDs #9562](https://www.rfc-editor.org/rfc/rfc9562.html) and an
+> [open discussion](https://github.com/uuid6/uuid6-ietf-draft/issues/60) leading up
+> to it.
+
 ## Simplified Problem
 
 Suppose you have a distributed environment in which some unknown
